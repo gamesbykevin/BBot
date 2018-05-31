@@ -45,9 +45,26 @@ public class Agent {
 
     public Agent() {
 
-        //create our new chrome options
-        this.options = new ChromeOptions();
-        this.options.addArguments("--user-agent=" + USER_AGENT_MOBILE);
+    }
+
+    public ChromeOptions getOptions(boolean mobile) {
+
+        //if null let's create it
+        if (this.options == null) {
+
+            //create our new chrome options
+            this.options = new ChromeOptions();
+
+            //spoof the browser we are using when testing mobile
+            if (mobile)
+                this.options.addArguments("--user-agent=" + USER_AGENT_MOBILE);
+
+            //add headless so the browser can run in the background without a gui
+            this.options.addArguments("--headless");
+        }
+
+        //return our object
+        return this.options;
     }
 
     public void createDriver(final boolean mobile) {
@@ -57,9 +74,9 @@ public class Agent {
         System.setProperty(DRIVER_PROPERTY, CHROME_DRIVER_LOCATION);
 
         if (mobile) {
-            this.driver = new ChromeDriver(options);
+            this.driver = new ChromeDriver(getOptions(mobile));
         } else {
-            this.driver = new ChromeDriver();
+            this.driver = new ChromeDriver(getOptions(mobile));
         }
 
         //wait a moment

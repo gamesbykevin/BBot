@@ -10,10 +10,10 @@ import java.util.Random;
 public class AgentHelper {
 
     //how long do we pause for
-    private static final long PAUSE_DELAY_MIN = 2000L;
+    private static final long PAUSE_DELAY_MIN = 5000L;
 
     //when we pause let's do it at a random time with this range
-    private static final long PAUSE_DELAY_RANGE = 3000L;
+    private static final long PAUSE_DELAY_RANGE = 5000L;
 
     //object used to pick random time
     private static Random random;
