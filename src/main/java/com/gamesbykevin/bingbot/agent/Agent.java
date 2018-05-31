@@ -43,25 +43,24 @@ public class Agent {
 
     public static String BING_REWARDS_PAGE;
 
+    /**
+     * Default constructor
+     */
     public Agent() {
 
     }
 
     public ChromeOptions getOptions(boolean mobile) {
 
-        //if null let's create it
-        if (this.options == null) {
+        //create our new chrome options
+        this.options = new ChromeOptions();
 
-            //create our new chrome options
-            this.options = new ChromeOptions();
+        //spoof the browser we are using when testing mobile
+        if (mobile)
+            this.options.addArguments("--user-agent=" + USER_AGENT_MOBILE);
 
-            //spoof the browser we are using when testing mobile
-            if (mobile)
-                this.options.addArguments("--user-agent=" + USER_AGENT_MOBILE);
-
-            //add headless so the browser can run in the background without a gui
-            this.options.addArguments("--headless");
-        }
+        //add headless so the browser can run in the background without a gui
+        this.options.addArguments("--headless");
 
         //return our object
         return this.options;
@@ -73,11 +72,8 @@ public class Agent {
         displayMessage("Launching browser with driver: " + CHROME_DRIVER_LOCATION);
         System.setProperty(DRIVER_PROPERTY, CHROME_DRIVER_LOCATION);
 
-        if (mobile) {
-            this.driver = new ChromeDriver(getOptions(mobile));
-        } else {
-            this.driver = new ChromeDriver(getOptions(mobile));
-        }
+        //create our driver with the specified options
+        this.driver = new ChromeDriver(getOptions(mobile));
 
         //wait a moment
         pause();
