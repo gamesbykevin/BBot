@@ -62,6 +62,9 @@ public class Agent {
         //add headless so the browser can run in the background without a gui
         this.options.addArguments("--headless");
 
+        //needed to start chrome without error
+        this.options.addArguments("--no-sandbox");
+
         //return our object
         return this.options;
     }
