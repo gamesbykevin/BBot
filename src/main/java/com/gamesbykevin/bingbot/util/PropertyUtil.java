@@ -2,11 +2,9 @@ package com.gamesbykevin.bingbot.util;
 
 import com.gamesbykevin.bingbot.Main;
 import com.gamesbykevin.bingbot.agent.Agent;
+import com.gamesbykevin.bingbot.agent.AgentHelper;
 
-import java.io.FileInputStream;
 import java.util.Properties;
-
-import static com.gamesbykevin.bingbot.Main.displayMessage;
 
 public class PropertyUtil {
 
@@ -65,11 +63,25 @@ public class PropertyUtil {
         //how long does the bot sleep
         Main.SLEEP_BOT = Long.parseLong(getProperties().getProperty("sleep"));
 
+        //minimum time we wait to perform our next action
+        AgentHelper.PAUSE_DELAY_MIN = Long.parseLong(getProperties().getProperty("pauseDelayMin"));
+
+        //additional time on the minimum delay
+        AgentHelper.PAUSE_DELAY_RANGE = Long.parseLong(getProperties().getProperty("pauseDelayRange"));
+
         //how many searches do we perform before resting
         Agent.BING_SEARCH_LIMIT = Integer.parseInt(getProperties().getProperty("bingSearchLimit"));
 
         //where is the driver so we can interact with the web pages
         Agent.CHROME_DRIVER_LOCATION = getProperties().getProperty("chromeDriverLocation");
+
+        //we won't allow any time less than 1 second
+        if (AgentHelper.PAUSE_DELAY_MIN < 1000)
+            AgentHelper.PAUSE_DELAY_MIN = 1000;
+
+        //we won't allow any time less than 1 second
+        if (AgentHelper.PAUSE_DELAY_RANGE < 1000)
+            AgentHelper.PAUSE_DELAY_RANGE = 1000;
 
         //let's maintain a minimum of 1 minute
         if (Main.SLEEP_BOT < 1)

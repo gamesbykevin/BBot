@@ -44,6 +44,10 @@ public class Main extends Thread {
         this.agent = new Agent();
     }
 
+    public Agent getAgent() {
+        return this.agent;
+    }
+
     @Override
     public void run() {
 
@@ -63,16 +67,14 @@ public class Main extends Thread {
                     //run our program in our typical chrome browser
                     runProgram(false);
 
-                    //run our program spoofing a mobile browser
+                    //run our program one again, but spoofing a mobile browser
                     final int points = runProgram(true);
 
                     //store the new time since our last successful run
                     previous = System.currentTimeMillis();
 
                     //send email that we are done
-                    String subject = "Bing bot completed";
-                    String body = "Points: " + points;
-                    Email.send(subject, body);
+                    Email.send("Bing bot completed", "Points: " + points);
 
                 } else {
                     displayMessage("Bot sleeping will run again in " + TimeUnit.MILLISECONDS.toSeconds(remaining) + " seconds.");
@@ -98,67 +100,69 @@ public class Main extends Thread {
         int result = 0;
 
         //create a new web driver for browsing
-        agent.createDriver(mobile);
+        getAgent().createDriver(mobile);
 
         //load the home page
-        agent.openHomePage();
+        getAgent().openHomePage();
 
         //mobile login is slightly different
         if (mobile) {
 
             //close the bing app promo
-            agent.clickCloseBingAppPromo();
+            getAgent().clickCloseBingAppPromo();
 
             //select the hamburger menu
-            agent.clickHamburgerMenuMobile();
+            getAgent().clickHamburgerMenuMobile();
 
             //click on "sign in"
-            agent.clickSigninMobile();
+            getAgent().clickSigninMobile();
 
         } else {
 
             //click the login button
-            agent.clickLogin();
+            getAgent().clickLogin();
 
             //select the account we want to login as
-            agent.clickConnect();
+            getAgent().clickConnect();
         }
 
         //enter our login
-        agent.enterLogin();
-
+        getAgent().enterLogin();
 
         //enter our password
-        agent.enterPassword();
+        getAgent().enterPassword();
 
         if (!mobile) {
 
             displayMessage("Checking for extra reward point links...");
 
             //check for extra points
-            agent.clickingExtraRewardLinks();
+            getAgent().clickingExtraRewardLinks();
         }
 
         //load the home page
-        agent.openHomePage();
+        getAgent().openHomePage();
 
         //perform the desired number of searches
         for (int i = 0; i < Agent.BING_SEARCH_LIMIT; i++) {
 
-            displayMessage("Searching ... " + (i+1));
+            displayMessage("Searching... " + (i+1));
 
             //perform the search
-            agent.performSearch();
+            getAgent().performSearch();
 
             //open the home page
-            agent.openHomePage();
+            getAgent().openHomePage();
 
             //retrieve our points
-            result = agent.getPoints(mobile);
+            result = getAgent().getPoints(mobile);
         }
 
         //close the browser
-        agent.closeBrowser();
+        getAgent().closeBrowser();
+
+        //clean up our variables
+        getAgent().recycle();
 
         //return our result
         return result;

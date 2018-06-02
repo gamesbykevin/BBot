@@ -32,22 +32,24 @@ public class Agent {
     //where is the google chrome selenium driver
     public static String CHROME_DRIVER_LOCATION;
 
+    //our user agent for mobile browsing
+    public static String USER_AGENT_MOBILE;
+
+    //our rewards page with extra bonus point options
+    public static String BING_REWARDS_PAGE;
+
     //our object used to interact with the web pages
     private WebDriver driver;
 
     //spoof our user agent for mobile
     private ChromeOptions options;
 
-    //our user agent for mobile browsing
-    public static String USER_AGENT_MOBILE;
-
-    public static String BING_REWARDS_PAGE;
-
     /**
      * Default constructor
      */
     public Agent() {
 
+        //do anything here?
     }
 
     public ChromeOptions getOptions(boolean mobile) {
@@ -62,7 +64,7 @@ public class Agent {
         //add headless so the browser can run in the background without a gui
         this.options.addArguments("--headless");
 
-        //needed to start chrome without error
+        //needed to start chrome without errors
         this.options.addArguments("--no-sandbox");
 
         //return our object
@@ -94,20 +96,7 @@ public class Agent {
     }
 
     public void clickCloseBingAppPromo() {
-
-        displayMessage("Clicking close promo link");
-
-        //locate close icon
-        WebElement element = getWebElement(getDriver(), By.cssSelector(".closeIcon.rms_img"),true);
-
-        if (element != null) {
-
-            //click it
-            element.click();
-
-            //wait a moment
-            pause();
-        }
+        clickLink(getDriver(), By.cssSelector(".closeIcon.rms_img"), "Clicking close promo link", true);
     }
 
     private void openBingRewardsPage() {
@@ -125,9 +114,6 @@ public class Agent {
 
         //open bing rewards page
         openBingRewardsPage();
-
-        //wait a moment
-        pause();
 
         //get list of elements to click
         List<WebElement> elements = getWebElements(getDriver(), By.cssSelector(".rewards-card-container"));
@@ -185,63 +171,19 @@ public class Agent {
     }
 
     public void clickHamburgerMenuMobile() {
-
-        displayMessage("Clicking hamburger menu");
-
-        //locate hamburger menu
-        WebElement element = getWebElement(getDriver(), By.id("mHamburger"));
-
-        //click it
-        element.click();
-
-        //wait a moment
-        pause();
+        clickLink(getDriver(), By.id("mHamburger"), "Clicking hamburger menu");
     }
 
     public void clickSigninMobile() {
-
-        displayMessage("Clicking sign in link");
-
-        //locate sign in
-        WebElement element = getWebElement(getDriver(), By.id("hb_a"));
-
-        //click it
-        element.click();
-
-        //wait a moment
-        pause();
+        clickLink(getDriver(), By.id("hb_a"), "Clicking sign in link");
     }
 
     public void clickConnect() {
-
-        displayMessage("Clicking connect");
-
-        //locate sign in link/button
-        WebElement element = getWebElement(getDriver(), By.className("b_toggle"), true);
-
-        if (element != null) {
-
-            //now that we have it let's click it
-            element.click();
-
-            //wait a moment
-            pause();
-
-        }
+        clickLink(getDriver(), By.className("b_toggle"), "Clicking connect", true);
     }
 
     public void clickLogin() {
-
-        displayMessage("Clicking login");
-
-        //locate sign in link/button
-        WebElement element = getWebElement(getDriver(), By.className("id_button"));
-
-        //now that we have it let's click it
-        element.click();
-
-        //wait a moment
-        pause();
+        clickLink(getDriver(), By.className("id_button"), "Clicking login");
     }
 
     public void enterLogin() {
@@ -254,14 +196,8 @@ public class Agent {
         //enter our user name
         element.sendKeys(BING_LOGIN_USERNAME);
 
-        //locate the "next" button
-        element = getWebElement(getDriver(), By.id("idSIButton9"));
-
-        //click the "next" button
-        element.click();
-
-        //wait a moment
-        pause();
+        //click the "Next" button
+        clickLink(getDriver(), By.id("idSIButton9"), "Clicking \"Next\"");
     }
 
     public void enterPassword() {
@@ -274,14 +210,8 @@ public class Agent {
         //enter our password
         element.sendKeys(BING_LOGIN_PASSWORD);
 
-        //locate sign in button
-        element = getWebElement(getDriver(), By.id("idSIButton9"));
-
-        //click the button
-        element.click();
-
-        //wait a moment
-        pause();
+        //click the "Sign In" button
+        clickLink(getDriver(), By.id("idSIButton9"), "Clicking \"Sign In\"");
     }
 
     public int getPoints(final boolean mobile) {
@@ -316,11 +246,19 @@ public class Agent {
             }
         }
 
-        //obtain our points
-        final int points = Integer.parseInt(element.getText());
+        int points = 0;
 
-        //display points total
-        displayMessage("Points: " + points);
+        try {
+
+            //obtain our points
+            points = Integer.parseInt(element.getText());
+
+            //display points total
+            displayMessage("Points: " + points);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         //return the points found
         return points;
@@ -350,5 +288,22 @@ public class Agent {
 
     private WebDriver getDriver() {
         return this.driver;
+    }
+
+    public void recycle() {
+
+        if (this.options != null)
+            this.options = null;
+
+        if (this.driver != null) {
+
+            try {
+                this.driver.quit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            this.driver = null;
+        }
     }
 }

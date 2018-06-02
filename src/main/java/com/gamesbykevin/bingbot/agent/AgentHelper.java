@@ -7,13 +7,15 @@ import org.openqa.selenium.WebElement;
 import java.util.List;
 import java.util.Random;
 
+import static com.gamesbykevin.bingbot.Main.displayMessage;
+
 public class AgentHelper {
 
-    //how long do we pause for
-    private static final long PAUSE_DELAY_MIN = 5000L;
+    //the shortest amount of time we pause for
+    public static long PAUSE_DELAY_MIN;
 
-    //when we pause let's do it at a random time with this range
-    private static final long PAUSE_DELAY_RANGE = 5000L;
+    //when we pause let's do it at a random time with this range added onto the minimum
+    public static long PAUSE_DELAY_RANGE = 5000L;
 
     //object used to pick random time
     private static Random random;
@@ -136,5 +138,25 @@ public class AgentHelper {
 
         //return our result
         return word;
+    }
+
+    protected static void clickLink(WebDriver driver, By by, String message) {
+        clickLink(driver, by, message, false);
+    }
+
+    protected static void clickLink(WebDriver driver, By by, String message, boolean exitOnError) {
+
+        //print message to command prompt
+        displayMessage(message);
+
+        //locate our element that we want to simulate a click
+        WebElement element = getWebElement(driver, by, exitOnError);
+
+        //click it as long as it is there
+        if (element != null)
+            element.click();
+
+        //wait a moment afterwards for the content to load
+        pause();
     }
 }
