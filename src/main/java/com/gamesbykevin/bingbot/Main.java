@@ -1,15 +1,16 @@
 package com.gamesbykevin.bingbot;
 
-import com.gamesbykevin.bingbot.agent.Agent;
 import com.gamesbykevin.bingbot.util.Email;
+import com.gamesbykevin.bingbot.util.LogFile;
 import com.gamesbykevin.bingbot.util.PropertyUtil;
 
 import java.util.concurrent.TimeUnit;
 
-public class Main extends Thread {
+import static com.gamesbykevin.bingbot.MainHelper.runProgram;
+import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
+import static com.gamesbykevin.bingbot.util.LogFile.recycle;
 
-    //our browser agent
-    private Agent agent;
+public class Main extends Thread {
 
     //how long do we sleep our thread
     public static final long THREAD_DELAY = 1000L;
@@ -36,16 +37,13 @@ public class Main extends Thread {
             displayMessage("Bingbot started...");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            displayMessage(e);
+            recycle();
         }
     }
 
     public Main() {
-        this.agent = new Agent();
-    }
-
-    public Agent getAgent() {
-        return this.agent;
+        //default constructor
     }
 
     @Override
@@ -76,12 +74,15 @@ public class Main extends Thread {
                     //send email that we are done
                     Email.send("Bing bot completed", "Points: " + points);
 
+                    //clean up log file resources
+                    LogFile.recycle();
+
                 } else {
-                    displayMessage("Bot sleeping will run again in " + TimeUnit.MILLISECONDS.toSeconds(remaining) + " seconds.");
+                    displayMessage("Bot sleeping will run again in " + TimeUnit.MILLISECONDS.toSeconds(remaining) + " seconds.", false);
                 }
 
             } catch (Exception e) {
-                e.printStackTrace();
+                displayMessage(e);
                 break;
             }
 
@@ -92,83 +93,5 @@ public class Main extends Thread {
                 ex.printStackTrace();
             }
         }
-    }
-
-    private int runProgram(final boolean mobile) {
-
-        //number of points found
-        int result = 0;
-
-        //create a new web driver for browsing
-        getAgent().createDriver(mobile);
-
-        //load the home page
-        getAgent().openHomePage();
-
-        //mobile login is slightly different
-        if (mobile) {
-
-            //close the bing app promo
-            getAgent().clickCloseBingAppPromo();
-
-            //select the hamburger menu
-            getAgent().clickHamburgerMenuMobile();
-
-            //click on "sign in"
-            getAgent().clickSigninMobile();
-
-        } else {
-
-            //click the login button
-            getAgent().clickLogin();
-
-            //select the account we want to login as
-            getAgent().clickConnect();
-        }
-
-        //enter our login
-        getAgent().enterLogin();
-
-        //enter our password
-        getAgent().enterPassword();
-
-        if (!mobile) {
-
-            displayMessage("Checking for extra reward point links...");
-
-            //check for extra points
-            getAgent().clickingExtraRewardLinks();
-        }
-
-        //load the home page
-        getAgent().openHomePage();
-
-        //perform the desired number of searches
-        for (int i = 0; i < Agent.BING_SEARCH_LIMIT; i++) {
-
-            displayMessage("Searching... " + (i+1));
-
-            //perform the search
-            getAgent().performSearch();
-
-            //open the home page
-            getAgent().openHomePage();
-
-            //retrieve our points
-            result = getAgent().getPoints(mobile);
-        }
-
-        //close the browser
-        getAgent().closeBrowser();
-
-        //clean up our variables
-        getAgent().recycle();
-
-        //return our result
-        return result;
-    }
-
-    public static void displayMessage(final String message) {
-        System.out.println(message);
     }
 }

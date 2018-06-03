@@ -7,7 +7,7 @@ import org.openqa.selenium.WebElement;
 import java.util.List;
 import java.util.Random;
 
-import static com.gamesbykevin.bingbot.Main.displayMessage;
+import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 
 public class AgentHelper {
 
@@ -58,48 +58,6 @@ public class AgentHelper {
 
         //we weren't expecting to get here, so return null
         return null;
-    }
-
-    protected static List<WebElement> getWebElements(WebDriver driver, By by) {
-
-        List<WebElement> elements = null;
-
-        boolean wait = true;
-
-        int count = 0;
-
-        //we are looking for an element on the page
-        while (wait) {
-
-            try {
-
-                //look for the element
-                elements = driver.findElements(by);
-
-                wait = false;
-
-                for (int i = 0; i < elements.size(); i++) {
-
-                    WebElement element = elements.get(i);
-
-                    //all elements should be displayed by now, so remove ones not displayed
-                    if (!element.isDisplayed()) {
-                        elements.remove(i);
-                    }
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                pause();
-            }
-
-            count++;
-
-            System.out.println("Waiting ... " + count);
-        }
-
-        //return our elements
-        return elements;
     }
 
     protected static void pause() {

@@ -4,6 +4,7 @@ import com.gamesbykevin.bingbot.Main;
 import com.gamesbykevin.bingbot.agent.Agent;
 import com.gamesbykevin.bingbot.agent.AgentHelper;
 
+import java.io.FileInputStream;
 import java.util.Properties;
 
 public class PropertyUtil {

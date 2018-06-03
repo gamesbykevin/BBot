@@ -9,8 +9,8 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.gamesbykevin.bingbot.Main.displayMessage;
 import static com.gamesbykevin.bingbot.agent.AgentHelper.*;
+import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 
 public class Agent {
 
@@ -41,44 +41,31 @@ public class Agent {
     //our object used to interact with the web pages
     private WebDriver driver;
 
-    //spoof our user agent for mobile
-    private ChromeOptions options;
-
     /**
-     * Default constructor
+     * Create our agent
+     * @param mobile Is this a desktop browser or mobile browser?
      */
-    public Agent() {
-
-        //do anything here?
-    }
-
-    public ChromeOptions getOptions(boolean mobile) {
-
-        //create our new chrome options
-        this.options = new ChromeOptions();
-
-        //spoof the browser we are using when testing mobile
-        if (mobile)
-            this.options.addArguments("--user-agent=" + USER_AGENT_MOBILE);
-
-        //add headless so the browser can run in the background without a gui
-        this.options.addArguments("--headless");
-
-        //needed to start chrome without errors
-        this.options.addArguments("--no-sandbox");
-
-        //return our object
-        return this.options;
-    }
-
-    public void createDriver(final boolean mobile) {
+    public Agent(boolean mobile) {
 
         displayMessage("*******************");
         displayMessage("Launching browser with driver: " + CHROME_DRIVER_LOCATION);
         System.setProperty(DRIVER_PROPERTY, CHROME_DRIVER_LOCATION);
 
+        //create our new chrome options
+        ChromeOptions options = new ChromeOptions();
+
+        //spoof the browser we are using when testing mobile
+        if (mobile)
+            options.addArguments("--user-agent=" + USER_AGENT_MOBILE);
+
+        //add headless so the browser can run in the background without a gui
+        options.addArguments("--headless");
+
+        //needed to start chrome without errors
+        options.addArguments("--no-sandbox");
+
         //create our driver with the specified options
-        this.driver = new ChromeDriver(getOptions(mobile));
+        this.driver = new ChromeDriver(options);
 
         //wait a moment
         pause();
@@ -115,32 +102,47 @@ public class Agent {
         //open bing rewards page
         openBingRewardsPage();
 
-        //get list of elements to click
-        List<WebElement> elements = getWebElements(getDriver(), By.cssSelector(".rewards-card-container"));
+        //locate elements by anchor tag
+        By anchorTag = By.tagName("a");
+
+        //get total elements found for us to click
+        int count = getDriver().findElements(anchorTag).size();
+        //List<WebElement> elements = getWebElements(getDriver(), By.cssSelector(".rewards-card-container"));
         //List<WebElement> elements = getWebElements(By.cssSelector(".ng-scope.c-call-to-action.c-glyph.f-lightweight"));
         //List<WebElement> elements = getWebElements(By.className("rewards-card-container"));
 
-        displayMessage("We found " + elements.size() + " potential extra reward links");
+        displayMessage("We found " + count + " potential extra reward links");
 
         //loop through each element
-        for (int i = 0; i < elements.size(); i++) {
+        for (int i = 0; i < count; i++) {
 
             try {
-
-                //wait a moment
-                pause();
 
                 //get a list of tabs
                 ArrayList<String> tabs1 = new ArrayList<>(getDriver().getWindowHandles());
 
-                //get the list of all the elements
-                elements = getWebElements(getDriver(), By.cssSelector(".rewards-card-container"));
+                //get the current element in the list
+                WebElement element = getDriver().findElements(anchorTag).get(i);
 
-                //get the current element
-                WebElement element = elements.get(i);
+                //display progress
+                displayMessage("Checking link #" + (i+1));
 
-                //click the link
+                //we can't click the link if it isn't displayed
                 if (element.isDisplayed()) {
+
+                    //don't click remove goal link
+                    if (element.getText() != null && element.getText().equalsIgnoreCase("REMOVE GOAL"))
+                        continue;
+
+                    //get the populated value for the class of this web element
+                    String value = element.getAttribute("class");
+
+                    //all links we want to click have specific values in the class attribute
+                    if (value == null || value.trim().length() < 1 || !value.contains("c-call-to-action"))
+                        continue;
+
+                    //display progress
+                    displayMessage("Clicking link with text \"" + element.getText() + "\"");
 
                     //click the element
                     element.click();
@@ -151,21 +153,23 @@ public class Agent {
                     //get a list of tabs
                     ArrayList<String> tabs2 = new ArrayList<>(getDriver().getWindowHandles());
 
-                    //if there are more tabs, a new one was opened
+                    //if there are more tabs, a new one was opened and we need to switch to get back to the rewards page
                     if (tabs2.size() > tabs1.size()) {
+
+                        displayMessage("Switching tabs");
 
                         //our bing rewards page should always be the first tab
                         getDriver().switchTo().window(tabs2.get(0));
 
                     } else {
 
-                        //go back a page
-                        getDriver().navigate().back();
+                        //since no tabs was opened we need to open the bing rewards page again
+                        openBingRewardsPage();
                     }
                 }
 
             } catch (Exception e) {
-                e.printStackTrace();
+                displayMessage(e);
             }
         }
     }
@@ -242,7 +246,7 @@ public class Agent {
                 displayMessage("Checking...");
                 pause();
             } catch (Exception e) {
-                e.printStackTrace();
+                displayMessage(e);
             }
         }
 
@@ -257,7 +261,7 @@ public class Agent {
             displayMessage("Points: " + points);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            displayMessage(e);
         }
 
         //return the points found
@@ -292,15 +296,12 @@ public class Agent {
 
     public void recycle() {
 
-        if (this.options != null)
-            this.options = null;
-
         if (this.driver != null) {
 
             try {
                 this.driver.quit();
             } catch (Exception e) {
-                e.printStackTrace();
+                displayMessage(e);
             }
 
             this.driver = null;

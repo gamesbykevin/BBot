@@ -8,7 +8,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
-import static com.gamesbykevin.bingbot.Main.displayMessage;
+import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 
 public class Email {
 
