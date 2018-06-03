@@ -7,12 +7,11 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.gamesbykevin.bingbot.agent.AgentHelper.*;
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 
-public class Agent {
+public abstract class Agent {
 
     private static final String DRIVER_PROPERTY = "webdriver.chrome.driver";
 
@@ -71,30 +70,49 @@ public class Agent {
         pause();
     }
 
-    public void openHomePage() {
+    /**
+     * Navigate to the login so we can begin entering our credentials
+     */
+    public abstract void navigateToLogin();
 
-        displayMessage("Opening homepage");
+    /**
+     * Get our bing points
+     * @return The total bing points acquired
+     */
+    public abstract int getPoints();
 
-        //load the bing homepage
-        getDriver().get(BING_HOMEPAGE);
+    public void openWebPage(String url, String message) {
+
+        displayMessage(message);
+
+        try {
+
+            //load the bing homepage
+            getDriver().get(url);
+
+        } catch (Exception e) {
+            displayMessage(e);
+        }
 
         //wait a moment
         pause();
     }
 
-    public void clickCloseBingAppPromo() {
-        clickLink(getDriver(), By.cssSelector(".closeIcon.rms_img"), "Clicking close promo link", true);
+    public void openHomePage() {
+        openWebPage(BING_HOMEPAGE, "Opening homepage");
     }
 
     private void openBingRewardsPage() {
+        openWebPage(BING_REWARDS_PAGE, "Opening bing rewards page");
+    }
 
-        displayMessage("Opening bing rewards page");
+    public void performSearch() {
 
-        //load the bing homepage
-        getDriver().get(BING_REWARDS_PAGE);
+        //create our url search string
+        final String url = String.format(BING_SEARCH_URL, getRandomWord());
 
-        //wait a moment
-        pause();
+        //open page with custom data
+        openWebPage(url, "Search url: " + url);
     }
 
     public void clickingExtraRewardLinks() {
@@ -107,10 +125,6 @@ public class Agent {
 
         //get total elements found for us to click
         int count = getDriver().findElements(anchorTag).size();
-        //List<WebElement> elements = getWebElements(getDriver(), By.cssSelector(".rewards-card-container"));
-        //List<WebElement> elements = getWebElements(By.cssSelector(".ng-scope.c-call-to-action.c-glyph.f-lightweight"));
-        //List<WebElement> elements = getWebElements(By.className("rewards-card-container"));
-
         displayMessage("We found " + count + " potential extra reward links");
 
         //loop through each element
@@ -125,7 +139,7 @@ public class Agent {
                 WebElement element = getDriver().findElements(anchorTag).get(i);
 
                 //display progress
-                displayMessage("Checking link #" + (i+1));
+                displayMessage("Checking link " + (i+1) + " of " + count);
 
                 //we can't click the link if it isn't displayed
                 if (element.isDisplayed()) {
@@ -153,12 +167,15 @@ public class Agent {
                     //get a list of tabs
                     ArrayList<String> tabs2 = new ArrayList<>(getDriver().getWindowHandles());
 
-                    //if there are more tabs, a new one was opened and we need to switch to get back to the rewards page
+                    //if there is a new tab we need to close it and switch back to the rewards page
                     if (tabs2.size() > tabs1.size()) {
 
-                        displayMessage("Switching tabs");
+                        //close the new tab
+                        getDriver().switchTo().window(tabs2.get(1));
+                        getDriver().close();
 
-                        //our bing rewards page should always be the first tab
+                        //then we switch back to our first tab
+                        displayMessage("Switching tabs");
                         getDriver().switchTo().window(tabs2.get(0));
 
                     } else {
@@ -172,22 +189,6 @@ public class Agent {
                 displayMessage(e);
             }
         }
-    }
-
-    public void clickHamburgerMenuMobile() {
-        clickLink(getDriver(), By.id("mHamburger"), "Clicking hamburger menu");
-    }
-
-    public void clickSigninMobile() {
-        clickLink(getDriver(), By.id("hb_a"), "Clicking sign in link");
-    }
-
-    public void clickConnect() {
-        clickLink(getDriver(), By.className("b_toggle"), "Clicking connect", true);
-    }
-
-    public void clickLogin() {
-        clickLink(getDriver(), By.className("id_button"), "Clicking login");
     }
 
     public void enterLogin() {
@@ -218,79 +219,45 @@ public class Agent {
         clickLink(getDriver(), By.id("idSIButton9"), "Clicking \"Sign In\"");
     }
 
-    public int getPoints(final boolean mobile) {
-
-        //for mobile we need to expand the hamburger menu to obtain the points
-        if (mobile)
-            clickHamburgerMenuMobile();
-
-        displayMessage("Obtaining points");
-
-        //wait a moment
-        pause();
-
-        //obtain the element containing our points
-        WebElement element;
-
-        //mobile has a different id to obtain points
-        if (mobile) {
-            element = getWebElement(getDriver(), By.id("fly_id_rc"));
-        } else {
-            element = getWebElement(getDriver(), By.id("id_rc"));
-        }
-
-        //continue to check until we have found our points
-        while (element.getText().length() < 1 || element.getText().equalsIgnoreCase("0")) {
-
-            try {
-                displayMessage("Checking...");
-                pause();
-            } catch (Exception e) {
-                displayMessage(e);
-            }
-        }
-
-        int points = 0;
-
-        try {
-
-            //obtain our points
-            points = Integer.parseInt(element.getText());
-
-            //display points total
-            displayMessage("Points: " + points);
-
-        } catch (Exception e) {
-            displayMessage(e);
-        }
-
-        //return the points found
-        return points;
-    }
-
-    public void performSearch() {
-
-        displayMessage("Performing search");
-
-        //create our url search string
-        final String url = String.format(BING_SEARCH_URL, getRandomWord());
-
-        //display our created url
-        displayMessage("Search url: " + url);
-
-        //perform the search
-        getDriver().get(url);
-
-        //wait a moment
-        pause();
-    }
-
     public void closeBrowser() {
         displayMessage("Closing browser");
         getDriver().quit();
     }
 
-    private WebDriver getDriver() {
+    protected int parsePoints(WebElement element) {
+
+        int points = 0;
+
+        if (element != null) {
+
+            //continue to check until we have found our points
+            while (element.getText().length() < 1 || element.getText().equalsIgnoreCase("0")) {
+
+                try {
+                    displayMessage("Checking...");
+                    pause();
+                } catch (Exception e) {
+                    displayMessage(e);
+                }
+            }
+
+            try {
+
+                //obtain our points
+                points = Integer.parseInt(element.getText());
+
+                //display points total
+                displayMessage("Points: " + points);
+
+            } catch (Exception e) {
+                displayMessage(e);
+            }
+        }
+
+        return points;
+    }
+
+    protected WebDriver getDriver() {
         return this.driver;
     }
 

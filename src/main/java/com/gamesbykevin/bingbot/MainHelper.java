@@ -1,64 +1,59 @@
 package com.gamesbykevin.bingbot;
 
 import com.gamesbykevin.bingbot.agent.Agent;
+import com.gamesbykevin.bingbot.agent.DesktopAgent;
+import com.gamesbykevin.bingbot.agent.MobileAgent;
 
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 
 public class MainHelper {
 
-    protected static int runProgram(final boolean mobile) {
+    protected static void runBonusProgram() {
+
+        displayMessage("Checking for extra reward point links...");
+
+        //create a new agent
+        Agent agent = new DesktopAgent();
+
+        //login
+        login(agent);
+
+        //check for extra points
+        agent.clickingExtraRewardLinks();
+
+        //close the browser
+        agent.closeBrowser();
+
+        //clean up variables
+        agent.recycle();
+        agent = null;
+    }
+
+    protected static int runSearchProgram(final boolean mobile) {
 
         //number of points found
         int result = 0;
 
+        //how we will navigate the web
+        Agent agent;
+
         //create a new agent for browsing
-        Agent agent = new Agent(mobile);
-
-        //load the home page
-        agent.openHomePage();
-
-        //mobile login is slightly different
         if (mobile) {
-
-            //close the bing app promo
-            agent.clickCloseBingAppPromo();
-
-            //select the hamburger menu
-            agent.clickHamburgerMenuMobile();
-
-            //click on "sign in"
-            agent.clickSigninMobile();
-
+            agent = new MobileAgent();
         } else {
-
-            //click the login button
-            agent.clickLogin();
-
-            //select the account we want to login as
-            agent.clickConnect();
+            agent = new DesktopAgent();
         }
 
-        //enter our login
-        agent.enterLogin();
-
-        //enter our password
-        agent.enterPassword();
-
-        if (!mobile) {
-
-            displayMessage("Checking for extra reward point links...");
-
-            //check for extra points
-            agent.clickingExtraRewardLinks();
-        }
+        //login
+        login(agent);
 
         //load the home page
         agent.openHomePage();
 
         //perform the desired number of searches
-        for (int i = 0; i < Agent.BING_SEARCH_LIMIT; i++) {
+        for (int i = 1; i <= Agent.BING_SEARCH_LIMIT; i++) {
 
-            displayMessage("Searching... " + (i+1));
+            displayMessage("Searching... #" + i);
 
             //perform the search
             agent.performSearch();
@@ -67,7 +62,7 @@ public class MainHelper {
             agent.openHomePage();
 
             //retrieve our points
-            result = agent.getPoints(mobile);
+            result = agent.getPoints();
         }
 
         //close the browser
@@ -79,5 +74,20 @@ public class MainHelper {
 
         //return our result
         return result;
+    }
+
+    private static void login(Agent agent) {
+
+        //load the home page
+        agent.openHomePage();
+
+        //go to the login page to enter credentials
+        agent.navigateToLogin();
+
+        //enter our login
+        agent.enterLogin();
+
+        //enter our password
+        agent.enterPassword();
     }
 }

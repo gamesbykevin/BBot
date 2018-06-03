@@ -4,7 +4,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import java.util.List;
 import java.util.Random;
 
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
@@ -28,36 +27,36 @@ public class AgentHelper {
     }
 
     protected static WebElement getWebElement(WebDriver driver, By by) {
-        return getWebElement(driver, by, false);
-    }
-
-    protected static WebElement getWebElement(WebDriver driver, By by, boolean exitOnError) {
 
         WebElement element = null;
 
-        //we are looking for an element on the page
-        while (true) {
+        //how many attempts
+        int count = 1;
+
+        //maximum number of attempts
+        final int limit = 15;
+
+        while (count <= limit) {
 
             try {
 
                 //look for the element
                 element = driver.findElement(by);
 
-                //if the element is shown, we can return it
-                if (element.isDisplayed())
-                    return element;
+                //if we found the element and it is displayed
+                if (element != null && element.isDisplayed())
+                    break;
 
             } catch (Exception e) {
-                e.printStackTrace();
-                pause();
-
-                if (exitOnError)
-                    break;
+                //don't print because it will be too much
             }
+
+            //add to count
+            count++;
         }
 
-        //we weren't expecting to get here, so return null
-        return null;
+        //return our object
+        return element;
     }
 
     protected static void pause() {
@@ -66,10 +65,9 @@ public class AgentHelper {
 
             //pick random sleep time
             final long sleep = PAUSE_DELAY_MIN + (getRandom().nextInt((int)PAUSE_DELAY_RANGE));
-
-            System.out.println("Sleeping for: " + sleep);
-
+            System.out.println("Sleeping for (milliseconds): " + sleep);
             Thread.sleep(sleep);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -99,16 +97,12 @@ public class AgentHelper {
     }
 
     protected static void clickLink(WebDriver driver, By by, String message) {
-        clickLink(driver, by, message, false);
-    }
-
-    protected static void clickLink(WebDriver driver, By by, String message, boolean exitOnError) {
 
         //print message to command prompt
         displayMessage(message);
 
         //locate our element that we want to simulate a click
-        WebElement element = getWebElement(driver, by, exitOnError);
+        WebElement element = getWebElement(driver, by);
 
         //click it as long as it is there
         if (element != null)

@@ -6,7 +6,8 @@ import com.gamesbykevin.bingbot.util.PropertyUtil;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.gamesbykevin.bingbot.MainHelper.runProgram;
+import static com.gamesbykevin.bingbot.MainHelper.runBonusProgram;
+import static com.gamesbykevin.bingbot.MainHelper.runSearchProgram;
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 import static com.gamesbykevin.bingbot.util.LogFile.recycle;
 
@@ -62,11 +63,14 @@ public class Main extends Thread {
                 //if there is no time remaining we can run again
                 if (remaining <= 0) {
 
+                    //check for bonus links
+                    runBonusProgram();
+
                     //run our program in our typical chrome browser
-                    runProgram(false);
+                    runSearchProgram(false);
 
                     //run our program one again, but spoofing a mobile browser
-                    final int points = runProgram(true);
+                    final int points = runSearchProgram(true);
 
                     //store the new time since our last successful run
                     previous = System.currentTimeMillis();

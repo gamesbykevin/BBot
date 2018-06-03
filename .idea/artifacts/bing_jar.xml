@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="BingBot:jar">
+  <artifact type="jar" name="bing:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/BingBot_jar</output-path>
     <root id="archive" name="BingBot.jar">
       <element id="directory" name="META-INF">
