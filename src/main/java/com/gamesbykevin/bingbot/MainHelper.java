@@ -10,22 +10,35 @@ public class MainHelper {
 
     protected static void runBonusProgram() {
 
-        displayMessage("Checking for extra reward point links...");
+        Agent agent = null;
 
-        //create a new agent
-        Agent agent = new DesktopAgent();
+        try {
 
-        //login
-        login(agent);
+            displayMessage("Checking for extra reward point links...");
 
-        //check for extra points
-        agent.clickingExtraRewardLinks();
+            //create a new agent
+            agent = new DesktopAgent();
 
-        //close the browser
-        agent.closeBrowser();
+            //login
+            login(agent);
 
-        //clean up variables
-        agent.recycle();
+            //check for extra points
+            agent.clickingExtraRewardLinks();
+
+            //close the browser
+            agent.closeBrowser();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        }
+
+        //clean up
+        if (agent != null)
+            agent.recycle();
+
+        //assign null
         agent = null;
     }
 
@@ -35,41 +48,52 @@ public class MainHelper {
         int result = 0;
 
         //how we will navigate the web
-        Agent agent;
+        Agent agent = null;
 
-        //create a new agent for browsing
-        if (mobile) {
-            agent = new MobileAgent();
-        } else {
-            agent = new DesktopAgent();
-        }
+        try {
 
-        //login
-        login(agent);
+            //create a new agent for browsing
+            if (mobile) {
+                agent = new MobileAgent();
+            } else {
+                agent = new DesktopAgent();
+            }
 
-        //load the home page
-        agent.openHomePage();
+            //login
+            login(agent);
 
-        //perform the desired number of searches
-        for (int i = 1; i <= Agent.BING_SEARCH_LIMIT; i++) {
-
-            displayMessage("Searching... #" + i);
-
-            //perform the search
-            agent.performSearch();
-
-            //open the home page
+            //load the home page
             agent.openHomePage();
 
-            //retrieve our points
-            result = agent.getPoints();
+            //perform the desired number of searches
+            for (int i = 1; i <= Agent.BING_SEARCH_LIMIT; i++) {
+
+                displayMessage("Searching... #" + i);
+
+                //perform the search
+                agent.performSearch();
+
+                //open the home page
+                agent.openHomePage();
+
+                //retrieve our points
+                result = agent.getPoints();
+            }
+
+            //close the browser
+            agent.closeBrowser();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
         }
 
-        //close the browser
-        agent.closeBrowser();
+        //clean up
+        if (agent != null)
+            agent.recycle();
 
-        //clean up our variables
-        agent.recycle();
+        //recycle
         agent = null;
 
         //return our result

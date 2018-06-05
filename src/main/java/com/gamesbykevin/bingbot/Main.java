@@ -63,14 +63,14 @@ public class Main extends Thread {
                 //if there is no time remaining we can run again
                 if (remaining <= 0) {
 
-                    //check for bonus links
-                    runBonusProgram();
-
                     //run our program in our typical chrome browser
                     runSearchProgram(false);
 
                     //run our program one again, but spoofing a mobile browser
                     final int points = runSearchProgram(true);
+
+                    //check for bonus links
+                    runBonusProgram();
 
                     //store the new time since our last successful run
                     previous = System.currentTimeMillis();
