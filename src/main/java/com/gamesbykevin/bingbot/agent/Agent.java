@@ -100,6 +100,7 @@ public abstract class Agent {
 
     public void openHomePage() {
         openWebPage(BING_HOMEPAGE, "Opening homepage");
+        pause();
     }
 
     private void openBingRewardsPage() {

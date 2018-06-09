@@ -33,9 +33,6 @@ public class DesktopAgent extends Agent {
         //open the home page where our points are located
         openHomePage();
 
-        //wait a moment
-        pause();
-
         //return the points found
         return parsePoints(getWebElement(getDriver(), By.id(ID_CONTAINER_POINTS)));
     }

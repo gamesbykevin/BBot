@@ -10,9 +10,6 @@ public class MainHelper {
 
     protected static int runBonusProgram() {
 
-        //number of points found
-        int result = 0;
-
         //how we will navigate the web
         Agent agent = null;
 
@@ -66,6 +63,9 @@ public class MainHelper {
 
                 //perform the search
                 agent.performSearch();
+
+                //load the home page
+                agent.openHomePage();
             }
 
         } catch (Exception e) {
