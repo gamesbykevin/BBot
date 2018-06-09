@@ -8,8 +8,12 @@ import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 
 public class MainHelper {
 
-    protected static void runBonusProgram() {
+    protected static int runBonusProgram() {
 
+        //number of points found
+        int result = 0;
+
+        //how we will navigate the web
         Agent agent = null;
 
         try {
@@ -25,27 +29,17 @@ public class MainHelper {
             //check for extra points
             agent.clickingExtraRewardLinks();
 
-            //close the browser
-            agent.closeBrowser();
-
         } catch (Exception e) {
 
             e.printStackTrace();
 
         }
 
-        //clean up
-        if (agent != null)
-            agent.recycle();
-
-        //assign null
-        agent = null;
+        //clean up our objects and return our points
+        return cleanup(agent);
     }
 
     protected static int runSearchProgram(final boolean mobile) {
-
-        //number of points found
-        int result = 0;
 
         //how we will navigate the web
         Agent agent = null;
@@ -72,26 +66,35 @@ public class MainHelper {
 
                 //perform the search
                 agent.performSearch();
-
-                //open the home page
-                agent.openHomePage();
-
-                //retrieve our points
-                result = agent.getPoints();
             }
 
-            //close the browser
-            agent.closeBrowser();
-
         } catch (Exception e) {
-
             e.printStackTrace();
-
         }
 
+        //clean up our objects and return our points
+        return cleanup(agent);
+    }
+
+    private static int cleanup(Agent agent) {
+
+        int result = 0;
+
         //clean up
-        if (agent != null)
-            agent.recycle();
+        try {
+
+            if (agent != null) {
+
+                //retrieve our points before we recycle
+                result = agent.getPoints();
+
+                //recycle object(s)
+                agent.recycle();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         //recycle
         agent = null;

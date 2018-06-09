@@ -30,6 +30,9 @@ public class DesktopAgent extends Agent {
 
         displayMessage("Obtaining points");
 
+        //open the home page where our points are located
+        openHomePage();
+
         //wait a moment
         pause();
 

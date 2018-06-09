@@ -219,11 +219,6 @@ public abstract class Agent {
         clickLink(getDriver(), By.id("idSIButton9"), "Clicking \"Sign In\"");
     }
 
-    public void closeBrowser() {
-        displayMessage("Closing browser");
-        getDriver().quit();
-    }
-
     protected int parsePoints(WebElement element) {
 
         int points = 0;
@@ -266,6 +261,7 @@ public abstract class Agent {
         if (this.driver != null) {
 
             try {
+                displayMessage("Closing browser");
                 this.driver.quit();
             } catch (Exception e) {
                 displayMessage(e);

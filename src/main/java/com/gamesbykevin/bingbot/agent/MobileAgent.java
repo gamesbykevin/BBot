@@ -37,6 +37,9 @@ public class MobileAgent extends Agent {
 
         displayMessage("Obtaining points");
 
+        //open the home page where our points are located
+        openHomePage();
+
         //expand the hamburger menu to obtain the points
         clickHamburgerMenuMobile();
 
