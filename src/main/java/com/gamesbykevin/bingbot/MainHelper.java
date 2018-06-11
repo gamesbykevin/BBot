@@ -8,7 +8,41 @@ import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 
 public class MainHelper {
 
-    protected static int runBonusProgram() {
+    protected static int getPoints() {
+
+        int points = 0;
+
+        //how we will navigate the web
+        Agent agent = null;
+
+        try {
+
+            displayMessage("Checking total points ...");
+
+            //create a new agent
+            agent = new DesktopAgent();
+
+            //login
+            login(agent);
+
+            //get our points
+            points = agent.getPoints();
+
+            //clean up our objects
+            if (agent != null)
+                agent.recycle();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            agent = null;
+        }
+
+        //return our points
+        return points;
+    }
+
+    protected static void runBonusProgram() {
 
         //how we will navigate the web
         Agent agent = null;
@@ -32,11 +66,14 @@ public class MainHelper {
 
         }
 
-        //clean up our objects and return our points
-        return cleanup(agent);
+        //clean up our objects
+        if (agent != null)
+            agent.recycle();
+
+        agent = null;
     }
 
-    protected static int runSearchProgram(final boolean mobile) {
+    protected static void runSearchProgram(final boolean mobile) {
 
         //how we will navigate the web
         Agent agent = null;
@@ -72,35 +109,11 @@ public class MainHelper {
             e.printStackTrace();
         }
 
-        //clean up our objects and return our points
-        return cleanup(agent);
-    }
+        //clean up our objects
+        if (agent != null)
+            agent.recycle();
 
-    private static int cleanup(Agent agent) {
-
-        int result = 0;
-
-        //clean up
-        try {
-
-            if (agent != null) {
-
-                //retrieve our points before we recycle
-                result = agent.getPoints();
-
-                //recycle object(s)
-                agent.recycle();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        //recycle
         agent = null;
-
-        //return our result
-        return result;
     }
 
     private static void login(Agent agent) {

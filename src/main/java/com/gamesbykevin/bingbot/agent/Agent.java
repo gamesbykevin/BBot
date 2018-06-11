@@ -7,6 +7,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.gamesbykevin.bingbot.agent.AgentHelper.*;
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
@@ -124,72 +125,63 @@ public abstract class Agent {
         //locate elements by anchor tag
         By anchorTag = By.tagName("a");
 
-        //get total elements found for us to click
-        int count = getDriver().findElements(anchorTag).size();
-        displayMessage("We found " + count + " potential extra reward links");
+        //get total elements found for us to check
+        List<WebElement> elements = getDriver().findElements(anchorTag);
+
+        //our final list of urls to check
+        List<String> urls = new ArrayList<>();
 
         //loop through each element
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < elements.size(); i++) {
 
             try {
 
-                //get a list of tabs
-                ArrayList<String> tabs1 = new ArrayList<>(getDriver().getWindowHandles());
-
                 //get the current element in the list
-                WebElement element = getDriver().findElements(anchorTag).get(i);
+                WebElement element = elements.get(i);
 
-                //display progress
-                displayMessage("Checking link " + (i+1) + " of " + count);
+                if (!element.isDisplayed())
+                    continue;
 
-                //we can't click the link if it isn't displayed
-                if (element.isDisplayed()) {
+                //don't click remove goal link
+                if (element.getText() != null && element.getText().equalsIgnoreCase("REMOVE GOAL"))
+                    continue;
 
-                    //don't click remove goal link
-                    if (element.getText() != null && element.getText().equalsIgnoreCase("REMOVE GOAL"))
-                        continue;
+                //get the populated value for the class of this web element
+                String value = element.getAttribute("class");
 
-                    //get the populated value for the class of this web element
-                    String value = element.getAttribute("class");
+                //all links we want to click have specific values in the class attribute
+                if (value == null || value.trim().length() < 1 || !value.contains("c-call-to-action"))
+                    continue;
 
-                    //all links we want to click have specific values in the class attribute
-                    if (value == null || value.trim().length() < 1 || !value.contains("c-call-to-action"))
-                        continue;
-
-                    //display progress
-                    displayMessage("Clicking link with text \"" + element.getText() + "\"");
-
-                    //click the element
-                    element.click();
-
-                    //wait a moment
-                    pause();
-
-                    //get a list of tabs
-                    ArrayList<String> tabs2 = new ArrayList<>(getDriver().getWindowHandles());
-
-                    //if there is a new tab we need to close it and switch back to the rewards page
-                    if (tabs2.size() > tabs1.size()) {
-
-                        //close the new tab
-                        getDriver().switchTo().window(tabs2.get(1));
-                        getDriver().close();
-
-                        //then we switch back to our first tab
-                        displayMessage("Switching tabs");
-                        getDriver().switchTo().window(tabs2.get(0));
-
-                    } else {
-
-                        //since no tabs was opened we need to open the bing rewards page again
-                        openBingRewardsPage();
-                    }
-                }
+                urls.add(element.getAttribute("href"));
 
             } catch (Exception e) {
                 displayMessage(e);
             }
         }
+
+        displayMessage("We found " + urls.size() + " potential extra reward links");
+
+        //loop through each element
+        for (int i = 0; i < urls.size(); i++) {
+
+            try {
+
+                //display progress
+                displayMessage("Checking link " + (i+1) + " of " + urls.size());
+
+                //open the page
+                openWebPage(urls.get(i), "Opening url \"" + urls.get(i) + "\"");
+
+            } catch (Exception e) {
+                displayMessage(e);
+            }
+        }
+
+        elements.clear();
+        elements = null;
+        urls.clear();
+        urls = null;
     }
 
     public void enterLogin() {
