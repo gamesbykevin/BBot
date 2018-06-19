@@ -4,6 +4,8 @@ import com.gamesbykevin.bingbot.agent.Agent;
 import com.gamesbykevin.bingbot.agent.DesktopAgent;
 import com.gamesbykevin.bingbot.agent.MobileAgent;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 
 public class MainHelper {
@@ -129,5 +131,15 @@ public class MainHelper {
 
         //enter our password
         agent.enterPassword();
+    }
+
+    public static String getDurationDesc(final long duration) {
+
+        return String.format(
+                "%02d:%02d:%02d",
+                TimeUnit.MILLISECONDS.toHours(duration),
+                TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
+                TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
+        );
     }
 }

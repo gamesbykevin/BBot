@@ -10,14 +10,31 @@ import java.util.Properties;
 
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 
-public class Email {
+public class Email extends Thread {
 
     public static String EMAIL_NOTIFICATION_ADDRESS = null;
 
     public static String GMAIL_SMTP_USERNAME = null;
     public static String GMAIL_SMTP_PASSWORD = null;
 
-    public static void send(final String subject, final String body) {
+    //the subject and body of our email message
+    private final String subject, body;
+
+    public Email(String subject, String body) {
+        this.subject = subject;
+        this.body = body;
+    }
+
+    public String getSubject() {
+        return this.subject;
+    }
+
+    public String getBody() {
+        return this.body;
+    }
+
+    @Override
+    public void run() {
 
         //don't send email if email address doesn't exist
         if (EMAIL_NOTIFICATION_ADDRESS == null || EMAIL_NOTIFICATION_ADDRESS.trim().length() < 5)
@@ -46,8 +63,8 @@ public class Email {
             message = new MimeMessage(session);
             message.setFrom(new InternetAddress(GMAIL_SMTP_USERNAME));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(EMAIL_NOTIFICATION_ADDRESS));
-            message.setSubject(subject);
-            message.setText(body);
+            message.setSubject(getSubject());
+            message.setText(getBody());
 
             //we are now sending
             displayMessage("Sending email....");
@@ -74,5 +91,14 @@ public class Email {
                 ex.printStackTrace();
             }
         }
+    }
+
+    public static void send(final String subject, final String body) {
+
+        //create new email, which creates a new thread
+        Email email = new Email(subject, body);
+
+        //start the thread which will send the email
+        email.start();
     }
 }

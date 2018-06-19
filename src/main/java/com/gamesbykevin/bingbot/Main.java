@@ -6,9 +6,7 @@ import com.gamesbykevin.bingbot.util.PropertyUtil;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.gamesbykevin.bingbot.MainHelper.getPoints;
-import static com.gamesbykevin.bingbot.MainHelper.runBonusProgram;
-import static com.gamesbykevin.bingbot.MainHelper.runSearchProgram;
+import static com.gamesbykevin.bingbot.MainHelper.*;
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 import static com.gamesbykevin.bingbot.util.LogFile.recycle;
 
@@ -22,6 +20,9 @@ public class Main extends Thread {
 
     //how many milliseconds per minute
     private static final long MILLIS_PER_MINUTE = (1000 * 60);
+
+    //when did we start
+    private final long start;
 
     public static void main(String[] args) {
 
@@ -45,7 +46,9 @@ public class Main extends Thread {
     }
 
     public Main() {
-        //default constructor
+
+        //mark the start time
+        this.start = System.currentTimeMillis();
     }
 
     @Override
@@ -71,7 +74,7 @@ public class Main extends Thread {
                     runSearchProgram(true);
 
                     //check for bonus links
-                    runBonusProgram();
+                    //runBonusProgram();
 
                     //store the new time since our last successful run
                     previous = System.currentTimeMillis();
@@ -80,7 +83,7 @@ public class Main extends Thread {
                     int points = getPoints();
 
                     //send email that we are done
-                    Email.send("Bing bot completed", "Points: " + points);
+                    Email.send("Bing Points: " + points, "Uptime HH:MM:SS - " + getDurationDesc(System.currentTimeMillis() - start));
 
                     //clean up log file resources
                     LogFile.recycle();
