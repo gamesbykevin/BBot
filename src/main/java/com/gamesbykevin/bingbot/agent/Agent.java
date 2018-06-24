@@ -6,7 +6,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.gamesbykevin.bingbot.agent.AgentHelper.*;
@@ -128,50 +127,56 @@ public abstract class Agent {
         //get total elements found for us to check
         List<WebElement> elements = getDriver().findElements(anchorTag);
 
-        //our final list of urls to check
-        List<String> urls = new ArrayList<>();
+        //how many links do we have
+        int count = elements.size();
+        displayMessage("We found " + count + " potential extra reward links");
 
         //loop through each element
-        for (int i = 0; i < elements.size(); i++) {
+        for (int index = 0; index < count; index++) {
 
             try {
 
-                //get the current element in the list
-                WebElement element = elements.get(i);
+                //open bing rewards page
+                openBingRewardsPage();
 
-                if (!element.isDisplayed())
-                    continue;
+                //get a list of all the elements on the page
+                elements = getDriver().findElements(anchorTag);
 
-                //don't click remove goal link
-                if (element.getText() != null && element.getText().equalsIgnoreCase("REMOVE GOAL"))
-                    continue;
+                //were we successful clicking the link
+                boolean result = false;
 
-                //get the populated value for the class of this web element
-                String value = element.getAttribute("class");
+                //continue to check the links until we are able to click one successfully
+                while (!result) {
 
-                //all links we want to click have specific values in the class attribute
-                if (value == null || value.trim().length() < 1 || !value.contains("c-call-to-action"))
-                    continue;
+                    //checking each link
+                    displayMessage("Checking " + index + " of " + count);
 
-                urls.add(element.getAttribute("href"));
+                    WebElement element = null;
 
-            } catch (Exception e) {
-                displayMessage(e);
-            }
-        }
+                    //get the current element in the list as long as we are in range
+                    if (index < elements.size()) {
+                        element = elements.get(index);
+                    } else {
+                        break;
+                    }
 
-        displayMessage("We found " + urls.size() + " potential extra reward links");
+                    //attempt to click the link
+                    result = clickBonusLink(element);
 
-        //loop through each element
-        for (int i = 0; i < urls.size(); i++) {
+                    //recycle
+                    element = null;
 
-            try {
+                    if (!result) {
 
-                //display progress
-                displayMessage("Checking link " + (i+1) + " of " + urls.size());
+                        //if we aren't successful go to the next element
+                        index++;
 
-                //open the page
-                openWebPage(urls.get(i), "Opening url \"" + urls.get(i) + "\"");
+                    } else {
+
+                        //if we are successful close page
+                        //getDriver().close();
+                    }
+                }
 
             } catch (Exception e) {
                 displayMessage(e);
@@ -180,8 +185,50 @@ public abstract class Agent {
 
         elements.clear();
         elements = null;
-        urls.clear();
-        urls = null;
+    }
+
+    private boolean clickBonusLink(WebElement element) {
+
+        //if null we can't click it
+        if (element == null)
+            return false;
+
+        //if not displayed we can't click it
+        if (!element.isDisplayed())
+            return false;
+
+        //click links with words
+        if (element.getText() == null)
+            return false;
+
+        //don't click remove goal link
+        if (element.getText().toUpperCase().contains("REMOVE"))
+            return false;
+
+        //get the populated value for the class of this web element
+        String value = element.getAttribute("class");
+
+        //all links we want to click have specific values in the class attribute
+        if (value == null || value.trim().length() < 1)
+            return false;
+        if (!value.toLowerCase().contains("c-call-to-action"))
+            return false;
+        if (!value.toLowerCase().contains("c-glyph"))
+            return false;
+        if (!value.toLowerCase().contains("f-lightweight"))
+            return false;
+
+        //notify user
+        displayMessage("Clicking link: " + element.getText());
+
+        //we know the element is good now, so we can click it
+        element.click();
+
+        //sleep for a short time
+        pause();
+
+        //we have success
+        return true;
     }
 
     public void enterLogin() {

@@ -5,21 +5,20 @@ import com.gamesbykevin.bingbot.agent.Agent;
 import com.gamesbykevin.bingbot.agent.AgentHelper;
 
 import java.io.FileInputStream;
-import java.util.Properties;
 
-public class PropertyUtil {
+public class Properties {
 
     public static final String PROPERTY_FILE = "./application.properties";
 
-    private static Properties PROPERTIES;
+    private static java.util.Properties PROPERTIES;
 
     public static final boolean DEBUG = true;
 
-    public static Properties getProperties() {
+    public static java.util.Properties getProperties() {
 
         if (PROPERTIES == null) {
 
-            PROPERTIES = new Properties();
+            PROPERTIES = new java.util.Properties();
 
             try {
 
@@ -44,7 +43,7 @@ public class PropertyUtil {
         return PROPERTIES;
     }
 
-    public static void loadProperties() {
+    public static void load() {
 
         //grab the email address from our config
         Email.EMAIL_NOTIFICATION_ADDRESS = getProperties().getProperty("emailNotification");

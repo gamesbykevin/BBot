@@ -2,7 +2,7 @@ package com.gamesbykevin.bingbot;
 
 import com.gamesbykevin.bingbot.util.Email;
 import com.gamesbykevin.bingbot.util.LogFile;
-import com.gamesbykevin.bingbot.util.PropertyUtil;
+import com.gamesbykevin.bingbot.util.Properties;
 
 import java.util.concurrent.TimeUnit;
 
@@ -29,8 +29,8 @@ public class Main extends Thread {
         try {
 
             //load our properties
-            displayMessage("Loading properties: " + PropertyUtil.PROPERTY_FILE);
-            PropertyUtil.loadProperties();
+            displayMessage("Loading properties: " + Properties.PROPERTY_FILE);
+            Properties.load();
 
             //start our thread
             Main main = new Main();
@@ -74,7 +74,7 @@ public class Main extends Thread {
                     runSearchProgram(true);
 
                     //check for bonus links
-                    //runBonusProgram();
+                    runBonusProgram();
 
                     //store the new time since our last successful run
                     previous = System.currentTimeMillis();

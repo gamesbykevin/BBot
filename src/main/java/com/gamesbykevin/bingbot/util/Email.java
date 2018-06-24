@@ -40,6 +40,11 @@ public class Email extends Thread {
         if (EMAIL_NOTIFICATION_ADDRESS == null || EMAIL_NOTIFICATION_ADDRESS.trim().length() < 5)
             return;
 
+        if (GMAIL_SMTP_USERNAME == null || GMAIL_SMTP_USERNAME.trim().length() < 5)
+            return;
+        if (GMAIL_SMTP_PASSWORD == null || GMAIL_SMTP_PASSWORD.trim().length() < 5)
+            return;
+
         Message message = null;
         Properties props = null;
         Session session = null;
