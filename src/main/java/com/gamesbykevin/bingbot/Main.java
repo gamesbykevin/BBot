@@ -12,8 +12,8 @@ import static com.gamesbykevin.bingbot.util.LogFile.recycle;
 
 public class Main extends Thread {
 
-    //how long do we sleep our thread
-    public static final long THREAD_DELAY = 1000L;
+    //how long do we sleep
+    public static final long THREAD_DELAY = 60000L;
 
     //how long does the bot sleep (in minutes);
     public static long SLEEP_BOT;
@@ -23,6 +23,9 @@ public class Main extends Thread {
 
     //when did we start
     private final long start;
+
+    //this script will reboot ubuntu
+    private static final String SHELL_SCRIPT_FILE = "./turn_off.sh";
 
     public static void main(String[] args) {
 
@@ -57,7 +60,7 @@ public class Main extends Thread {
         //we need to keep track of the previous time the bot has run
         long previous = System.currentTimeMillis() - (MILLIS_PER_MINUTE * SLEEP_BOT);
 
-        while (true) {
+        //while (true) {
 
             try {
 
@@ -68,18 +71,22 @@ public class Main extends Thread {
                 if (remaining <= 0) {
 
                     //run our program in our typical chrome browser
+                    Email.send("Bing bot","Desktop Search Start");
                     runSearchProgram(false);
 
                     //run our program one again, but spoofing a mobile browser
+                    Email.send("Bing bot","Mobile Search Start");
                     runSearchProgram(true);
 
                     //check for bonus links
+                    Email.send("Bing bot","Bonus Links Start");
                     runBonusProgram();
 
                     //store the new time since our last successful run
                     previous = System.currentTimeMillis();
 
                     //get the # of points
+                    Email.send("Bing bot","Checking points");
                     int points = getPoints();
 
                     //send email that we are done
@@ -96,15 +103,21 @@ public class Main extends Thread {
 
             } catch (Exception e) {
                 displayMessage(e);
-                break;
+                //break;
             }
 
             try {
+
                 //sleep for a short time
                 Thread.sleep(THREAD_DELAY);
+
+                //call batch script to shutdown
+                Process process = Runtime.getRuntime().exec(SHELL_SCRIPT_FILE);
+                process.waitFor();
+
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        }
+        //}
     }
 }

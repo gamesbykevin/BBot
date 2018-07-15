@@ -6,6 +6,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.gamesbykevin.bingbot.agent.AgentHelper.*;
@@ -145,6 +146,9 @@ public abstract class Agent {
                 //were we successful clicking the link
                 boolean result = false;
 
+                //get the current list of tabs
+                ArrayList<String> tabs1 = new ArrayList<>(getDriver().getWindowHandles());
+
                 //continue to check the links until we are able to click one successfully
                 while (!result) {
 
@@ -166,16 +170,27 @@ public abstract class Agent {
                     //recycle
                     element = null;
 
-                    if (!result) {
-
-                        //if we aren't successful go to the next element
+                    //if we aren't successful go to the next element
+                    if (!result)
                         index++;
+                }
 
-                    } else {
+                //get the current list of tabs
+                ArrayList<String> tabs2 = new ArrayList<>(getDriver().getWindowHandles());
 
-                        //if we are successful close page
-                        //getDriver().close();
-                    }
+                //if a new tab was opened, close it
+                if (tabs1.size() != tabs2.size()) {
+
+                    displayMessage("New tab was opened, so we will close it");
+
+                    //switch to the new tab
+                    getDriver().switchTo().window(tabs2.get(tabs2.size() - 1));
+
+                    //close the tab
+                    getDriver().close();
+
+                    //move back to the other tab
+                    getDriver().switchTo().window(tabs2.get(0));
                 }
 
             } catch (Exception e) {
@@ -198,11 +213,12 @@ public abstract class Agent {
             return false;
 
         //click links with words
-        if (element.getText() == null)
+        if (element.getText() == null || element.getText().trim().length() < 1)
             return false;
 
         //don't click remove goal link
-        if (element.getText().toUpperCase().contains("REMOVE"))
+        if (element.getText().toUpperCase().contains("REMOVE") ||
+                element.getText().toUpperCase().contains("REDEEM"))
             return false;
 
         //get the populated value for the class of this web element
