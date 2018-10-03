@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 import static com.gamesbykevin.bingbot.MainHelper.*;
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 import static com.gamesbykevin.bingbot.util.LogFile.recycle;
+import static com.gamesbykevin.bingbot.util.Properties.isUnixLinux;
+import static com.gamesbykevin.bingbot.util.Properties.isWindows;
 
 public class Main extends Thread {
 
@@ -71,26 +73,26 @@ public class Main extends Thread {
                 if (remaining <= 0) {
 
                     //run our program in our typical chrome browser
-                    Email.send("Bing bot","Desktop Search Start");
+                    //Email.send("Bing bot","Desktop Search Start");
                     runSearchProgram(false);
 
                     //run our program one again, but spoofing a mobile browser
-                    Email.send("Bing bot","Mobile Search Start");
+                    //Email.send("Bing bot","Mobile Search Start");
                     runSearchProgram(true);
 
                     //check for bonus links
-                    Email.send("Bing bot","Bonus Links Start");
+                    //Email.send("Bing bot","Bonus Links Start");
                     runBonusProgram();
 
                     //store the new time since our last successful run
                     previous = System.currentTimeMillis();
 
                     //get the # of points
-                    Email.send("Bing bot","Checking points");
+                    //Email.send("Bing bot","Checking points");
                     int points = getPoints();
 
                     //send email that we are done
-                    Email.send("Bing Points: " + points, "Uptime HH:MM:SS - " + getDurationDesc(System.currentTimeMillis() - start));
+                    Email.send("Bing Points: " + points, "Runtime HH:MM:SS - " + getDurationDesc(System.currentTimeMillis() - start));
 
                     //clean up log file resources
                     LogFile.recycle();
@@ -112,8 +114,13 @@ public class Main extends Thread {
                 Thread.sleep(THREAD_DELAY);
 
                 //call batch script to shutdown
-                Process process = Runtime.getRuntime().exec(SHELL_SCRIPT_FILE);
-                process.waitFor();
+                if (isWindows()) {
+                    Process process = Runtime.getRuntime().exec("shutdown /s");
+                    process.waitFor();
+                } else if (isUnixLinux()) {
+                    Process process = Runtime.getRuntime().exec("sudo shutdown");//SHELL_SCRIPT_FILE);
+                    process.waitFor();
+                }
 
             } catch (Exception ex) {
                 ex.printStackTrace();

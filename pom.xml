@@ -49,6 +49,7 @@
     </properties>
 
     <build>
+
         <plugins>
 
             <!-- Build an executable JAR -->
@@ -93,6 +94,15 @@
             </plugin>
 
         </plugins>
+
+        <resources>
+            <resource>
+                <directory>resources</directory>
+                <excludes>
+                    <exclude>**/*.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
     </build>
 
 </project>

@@ -5,14 +5,23 @@ import com.gamesbykevin.bingbot.agent.Agent;
 import com.gamesbykevin.bingbot.agent.AgentHelper;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
+import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 
 public class Properties {
 
+    //the name / location of our property file
     public static final String PROPERTY_FILE = "./application.properties";
 
+    //property object to access our properties
     private static java.util.Properties PROPERTIES;
 
-    public static final boolean DEBUG = true;
+    //are we debugging (true if running in IDE, false otherwise)
+    public static boolean DEBUG = true;
+
+    //what operating system are we running on?
+    private static String OPERATING_SYSTEM;
 
     public static java.util.Properties getProperties() {
 
@@ -22,20 +31,27 @@ public class Properties {
 
             try {
 
-                if (DEBUG) {
+                try {
 
-                    //call this when running the project in intellij
-                    PROPERTIES.load(Main.class.getClassLoader().getResourceAsStream(PROPERTY_FILE));
-
-                } else {
-
-                    //call this when you create an executable .jar and place the application.properties file in the same directory as the .jar
+                    //call this when you create an executable .jar and run in production (place the property file in the same directory)
                     PROPERTIES.load(new FileInputStream(PROPERTY_FILE));
 
+                    //if success we aren't debugging
+                    DEBUG = false;
+
+                } catch (FileNotFoundException e) {
+
+                    //if file is not found, look in this project for the property file
+                    PROPERTIES.load(Main.class.getClassLoader().getResourceAsStream(PROPERTY_FILE));
+
+                    //if file doesn't exist, we are debugging
+                    DEBUG = true;
                 }
 
             } catch(Exception ex) {
                 ex.printStackTrace();
+
+                //exit app if we can't load a property file
                 System.exit(10);
             }
         }
@@ -80,8 +96,14 @@ public class Properties {
         //how many searches do we perform before resting
         Agent.BING_SEARCH_LIMIT = Integer.parseInt(getProperties().getProperty("bingSearchLimit"));
 
-        //where is the driver so we can interact with the web pages
-        Agent.CHROME_DRIVER_LOCATION = getProperties().getProperty("chromeDriverLocation");
+        //we need to find the location of the driver so we can interact with the web pages
+        if (isWindows()) {
+            displayMessage("Loading chrome driver (windows)");
+            Agent.CHROME_DRIVER_LOCATION = getProperties().getProperty("chromeDriverLocationWindows");
+        } else if (isUnixLinux()) {
+            displayMessage("Loading chrome driver (linux)");
+            Agent.CHROME_DRIVER_LOCATION = getProperties().getProperty("chromeDriverLocationLinux");
+        }
 
         //we won't allow any time less than 1 second
         if (AgentHelper.PAUSE_DELAY_MIN < 1000)
@@ -98,5 +120,25 @@ public class Properties {
         //let's perform at least 1 search
         if (Agent.BING_SEARCH_LIMIT < 1)
             Agent.BING_SEARCH_LIMIT = 1;
+    }
+
+    public static boolean isWindows() {
+        return (getOperatingSystem().toLowerCase().indexOf("win") >= 0);
+    }
+
+    public static boolean isUnixLinux() {
+        return (
+            getOperatingSystem().toLowerCase().indexOf("nix") >= 0 ||
+            getOperatingSystem().toLowerCase().indexOf("nux") >= 0 ||
+            getOperatingSystem().toLowerCase().indexOf("aix") > 0
+        );
+    }
+
+    public static String getOperatingSystem() {
+
+        if (OPERATING_SYSTEM == null)
+            OPERATING_SYSTEM = System.getProperty("os.name");
+
+        return OPERATING_SYSTEM;
     }
 }
