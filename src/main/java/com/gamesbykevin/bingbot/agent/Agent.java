@@ -1,5 +1,6 @@
 package com.gamesbykevin.bingbot.agent;
 
+import com.gamesbykevin.bingbot.util.Words;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -111,7 +112,7 @@ public abstract class Agent {
     public void performSearch() {
 
         //create our url search string
-        final String url = String.format(BING_SEARCH_URL, getRandomWord());
+        final String url = String.format(BING_SEARCH_URL, Words.getRandomWord());
 
         //open page with custom data
         openWebPage(url, "Search url: " + url);

@@ -3,28 +3,18 @@ package com.gamesbykevin.bingbot;
 import com.gamesbykevin.bingbot.util.Email;
 import com.gamesbykevin.bingbot.util.LogFile;
 import com.gamesbykevin.bingbot.util.Properties;
-
-import java.util.concurrent.TimeUnit;
+import com.gamesbykevin.bingbot.util.Words;
 
 import static com.gamesbykevin.bingbot.MainHelper.*;
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
-import static com.gamesbykevin.bingbot.util.LogFile.recycle;
-import static com.gamesbykevin.bingbot.util.Properties.isUnixLinux;
-import static com.gamesbykevin.bingbot.util.Properties.isWindows;
 
 public class Main extends Thread {
 
     //how long do we sleep
-    public static final long THREAD_DELAY = 60000L;
+    public static final long THREAD_DELAY = 10000L;
 
-    //how long does the bot sleep (in minutes);
-    public static long SLEEP_BOT;
-
-    //how many milliseconds per minute
-    private static final long MILLIS_PER_MINUTE = (1000 * 60);
-
-    //when did we start
-    private final long start;
+    //how long do we wait before starting
+    public static final long START_DELAY = (1000L * 60 * 5);
 
     //this script will reboot ubuntu
     private static final String SHELL_SCRIPT_FILE = "./turn_off.sh";
@@ -33,9 +23,31 @@ public class Main extends Thread {
 
         try {
 
+            //delay first before we start anything
+            displayMessage("Sleeping before start");
+
+            //sleep
+            Thread.sleep(START_DELAY);
+
+        } catch (Exception e) {
+
+            //display error
+            displayMessage(e);
+
+        } finally {
+
+            //notify that we are done
+            displayMessage("Sleep Done");
+        }
+
+        try {
+
             //load our properties
             displayMessage("Loading properties: " + Properties.PROPERTY_FILE);
             Properties.load();
+
+            //load our list of common english words
+            Words.load();
 
             //start our thread
             Main main = new Main();
@@ -46,85 +58,75 @@ public class Main extends Thread {
 
         } catch (Exception e) {
             displayMessage(e);
-            recycle();
+            LogFile.recycle();
+            Words.recycle();
         }
     }
 
     public Main() {
-
-        //mark the start time
-        this.start = System.currentTimeMillis();
+        //default constructor
     }
 
     @Override
     public void run() {
 
-        //we need to keep track of the previous time the bot has run
-        long previous = System.currentTimeMillis() - (MILLIS_PER_MINUTE * SLEEP_BOT);
+        try {
 
-        //while (true) {
+            //track how long our process takes
+            final long start = System.currentTimeMillis();
 
-            try {
+            //notify that we have started
+            Email.send("Bing bot","Start");
 
-                //milliseconds remaining until we can run again
-                final long remaining = (MILLIS_PER_MINUTE * SLEEP_BOT) - (System.currentTimeMillis() - previous);
+            //run our program in our typical chrome browser
+            //Email.send("Bing bot","Desktop Search Start");
+            runSearchProgram(false);
 
-                //if there is no time remaining we can run again
-                if (remaining <= 0) {
+            //run our program one again, but spoofing a mobile browser
+            //Email.send("Bing bot","Mobile Search Start");
+            runSearchProgram(true);
 
-                    //run our program in our typical chrome browser
-                    //Email.send("Bing bot","Desktop Search Start");
-                    runSearchProgram(false);
+            //we no longer need our words
+            Words.recycle();
 
-                    //run our program one again, but spoofing a mobile browser
-                    //Email.send("Bing bot","Mobile Search Start");
-                    runSearchProgram(true);
+            //check for bonus links
+            //Email.send("Bing bot","Bonus Links Start");
+            runBonusProgram();
 
-                    //check for bonus links
-                    //Email.send("Bing bot","Bonus Links Start");
-                    runBonusProgram();
+            //get the # of points
+            //Email.send("Bing bot","Checking points");
+            int points = getPoints();
 
-                    //store the new time since our last successful run
-                    previous = System.currentTimeMillis();
+            //send email that we are done
+            Email.send("Bing Points: " + points, "Runtime HH:MM:SS - " + getDurationDesc(System.currentTimeMillis() - start));
 
-                    //get the # of points
-                    //Email.send("Bing bot","Checking points");
-                    int points = getPoints();
+            //clean up log file resources
+            LogFile.recycle();
 
-                    //send email that we are done
-                    Email.send("Bing Points: " + points, "Runtime HH:MM:SS - " + getDurationDesc(System.currentTimeMillis() - start));
+        } catch (Exception e) {
+            displayMessage(e);
+        } finally {
+            Words.recycle();
+            LogFile.recycle();
+        }
 
-                    //clean up log file resources
-                    LogFile.recycle();
+        try {
 
-                } else {
+            //sleep for a short time
+            Thread.sleep(THREAD_DELAY);
 
-                    displayMessage("Bot sleeping will run again in " + TimeUnit.MILLISECONDS.toSeconds(remaining) + " seconds.", false);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
-                }
+        try {
 
-            } catch (Exception e) {
-                displayMessage(e);
-                //break;
-            }
+            //call batch script to shutdown
+            Process process = Runtime.getRuntime().exec(SHELL_SCRIPT_FILE);
+            process.waitFor();
 
-            try {
-
-                //sleep for a short time
-                Thread.sleep(THREAD_DELAY);
-
-                //call batch script to shutdown
-                if (isWindows()) {
-                    Process process = Runtime.getRuntime().exec("shutdown /s");
-                    process.waitFor();
-                } else if (isUnixLinux()) {
-                    Process process = Runtime.getRuntime().exec("sudo shutdown");//SHELL_SCRIPT_FILE);
-                    process.waitFor();
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        //}
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

@@ -12,16 +12,13 @@ import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
 public class Properties {
 
     //the name / location of our property file
-    public static final String PROPERTY_FILE = "./application.properties";
+    public static final String PROPERTY_FILE = "application.properties";
 
     //property object to access our properties
     private static java.util.Properties PROPERTIES;
 
     //are we debugging (true if running in IDE, false otherwise)
     public static boolean DEBUG = true;
-
-    //what operating system are we running on?
-    private static String OPERATING_SYSTEM;
 
     public static java.util.Properties getProperties() {
 
@@ -49,6 +46,8 @@ public class Properties {
                 }
 
             } catch(Exception ex) {
+
+                //display error message
                 ex.printStackTrace();
 
                 //exit app if we can't load a property file
@@ -84,9 +83,6 @@ public class Properties {
         //what user agent do we want to use
         Agent.USER_AGENT_MOBILE = getProperties().getProperty("chromUserAgentMobile");
 
-        //how long does the bot sleep
-        Main.SLEEP_BOT = Long.parseLong(getProperties().getProperty("sleep"));
-
         //minimum time we wait to perform our next action
         AgentHelper.PAUSE_DELAY_MIN = Long.parseLong(getProperties().getProperty("pauseDelayMin"));
 
@@ -97,10 +93,10 @@ public class Properties {
         Agent.BING_SEARCH_LIMIT = Integer.parseInt(getProperties().getProperty("bingSearchLimit"));
 
         //we need to find the location of the driver so we can interact with the web pages
-        if (isWindows()) {
+        if (DEBUG) {
             displayMessage("Loading chrome driver (windows)");
             Agent.CHROME_DRIVER_LOCATION = getProperties().getProperty("chromeDriverLocationWindows");
-        } else if (isUnixLinux()) {
+        } else {
             displayMessage("Loading chrome driver (linux)");
             Agent.CHROME_DRIVER_LOCATION = getProperties().getProperty("chromeDriverLocationLinux");
         }
@@ -113,32 +109,8 @@ public class Properties {
         if (AgentHelper.PAUSE_DELAY_RANGE < 1000)
             AgentHelper.PAUSE_DELAY_RANGE = 1000;
 
-        //let's maintain a minimum of 1 minute
-        if (Main.SLEEP_BOT < 1)
-            Main.SLEEP_BOT = 1;
-
         //let's perform at least 1 search
         if (Agent.BING_SEARCH_LIMIT < 1)
             Agent.BING_SEARCH_LIMIT = 1;
-    }
-
-    public static boolean isWindows() {
-        return (getOperatingSystem().toLowerCase().indexOf("win") >= 0);
-    }
-
-    public static boolean isUnixLinux() {
-        return (
-            getOperatingSystem().toLowerCase().indexOf("nix") >= 0 ||
-            getOperatingSystem().toLowerCase().indexOf("nux") >= 0 ||
-            getOperatingSystem().toLowerCase().indexOf("aix") > 0
-        );
-    }
-
-    public static String getOperatingSystem() {
-
-        if (OPERATING_SYSTEM == null)
-            OPERATING_SYSTEM = System.getProperty("os.name");
-
-        return OPERATING_SYSTEM;
     }
 }

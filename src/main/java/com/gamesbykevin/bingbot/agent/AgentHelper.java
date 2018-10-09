@@ -14,7 +14,7 @@ public class AgentHelper {
     public static long PAUSE_DELAY_MIN;
 
     //when we pause let's do it at a random time with this range added onto the minimum
-    public static long PAUSE_DELAY_RANGE = 5000L;
+    public static long PAUSE_DELAY_RANGE;
 
     //object used to pick random time
     private static Random random;
@@ -73,27 +73,6 @@ public class AgentHelper {
         }
 
         System.out.println("Sleep completed");
-    }
-
-    protected static String getRandomWord() {
-
-        //list of characters
-        final String alphabet = "abcdefghijklmnopqrstuvwxyz";
-
-        //our word
-        String word = "";
-
-        //the length of the word will be random size
-        final int length = getRandom().nextInt(6) + 5;
-
-        //pick random letters to create a fake word
-        while (word.length() < length) {
-            int index = random.nextInt(alphabet.length());
-            word += alphabet.charAt(index);
-        }
-
-        //return our result
-        return word;
     }
 
     protected static void clickLink(WebDriver driver, By by, String message) {

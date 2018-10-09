@@ -9,6 +9,7 @@ import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
 import static com.gamesbykevin.bingbot.util.LogFile.displayMessage;
+import static com.gamesbykevin.bingbot.util.Properties.DEBUG;
 
 public class Email extends Thread {
 
@@ -100,10 +101,14 @@ public class Email extends Thread {
 
     public static void send(final String subject, final String body) {
 
-        //create new email, which creates a new thread
-        Email email = new Email(subject, body);
+        //only send message if we aren't debugging
+        if (!DEBUG) {
 
-        //start the thread which will send the email
-        email.start();
+            //create new email, which creates a new thread
+            Email email = new Email(subject, body);
+
+            //start the thread which will send the email
+            email.start();
+        }
     }
 }
