@@ -112,7 +112,7 @@ public abstract class Agent {
     public void performSearch() {
 
         //create our url search string
-        final String url = String.format(BING_SEARCH_URL, Words.getRandomWord());
+        final String url = String.format(BING_SEARCH_URL, Words.getRandomWord(), Words.getRandomWord());
 
         //open page with custom data
         openWebPage(url, "Search url: " + url);
